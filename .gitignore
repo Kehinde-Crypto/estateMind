@@ -1,0 +1,22 @@
+# Python dependencies and environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+backend/.env
+
+# Node/Next.js dependencies and builds
+node_modules/
+frontend/frontend/node_modules/
+.next/
+frontend/frontend/.next/
+out/
+build/
+
+# IDE and system files
+.idea/
+.vscode/
+.DS_Store
+*.log
+.gemini/
+antigravity/

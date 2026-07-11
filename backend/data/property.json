@@ -1,0 +1,163 @@
+[
+  {
+    "id": 1,
+    "name": "Lekki Beach Apartment",
+    "location": "Lagos",
+    "price": 8000,
+    "wifi_speed": 50.0,
+    "beach_distance": 100,
+    "rating": 4.8,
+    "available": true,
+    "image_url": "/images/penthouse.png",
+    "amenities": [
+      "wifi",
+      "pool",
+      "parking",
+      "ocean view"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Victoria Island Penthouse",
+    "location": "Lagos",
+    "price": 25000,
+    "wifi_speed": 100.0,
+    "beach_distance": 500,
+    "rating": 4.9,
+    "available": true,
+    "image_url": "/images/villa.png",
+    "amenities": [
+      "wifi",
+      "gym",
+      "concierge",
+      "city view"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Ikeja Tech Hub Studio",
+    "location": "Lagos",
+    "price": 5000,
+    "wifi_speed": 120.0,
+    "beach_distance": 15000,
+    "rating": 4.5,
+    "available": true,
+    "image_url": "/images/apartment.png",
+    "amenities": [
+      "wifi",
+      "workspace",
+      "coffee shop"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Maitama Luxury Villa",
+    "location": "Abuja",
+    "price": 35000,
+    "wifi_speed": 80.0,
+    "beach_distance": 99999,
+    "rating": 5.0,
+    "available": false,
+    "image_url": "/images/estate.png",
+    "amenities": [
+      "wifi",
+      "pool",
+      "private chef",
+      "security"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Wuse 2 Business Suite",
+    "location": "Abuja",
+    "price": 12000,
+    "wifi_speed": 60.0,
+    "beach_distance": 99999,
+    "rating": 4.6,
+    "available": true,
+    "image_url": "/images/penthouse.png",
+    "amenities": [
+      "wifi",
+      "gym",
+      "conference room"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "GRA Port Harcourt Lodge",
+    "location": "Port Harcourt",
+    "price": 10000,
+    "wifi_speed": 40.0,
+    "beach_distance": 8000,
+    "rating": 4.4,
+    "available": true,
+    "image_url": "/images/villa.png",
+    "amenities": [
+      "wifi",
+      "parking",
+      "bar"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Eko Atlantic Skyline Condo",
+    "location": "Lagos",
+    "price": 40000,
+    "wifi_speed": 200.0,
+    "beach_distance": 50,
+    "rating": 4.9,
+    "available": true,
+    "image_url": "/images/apartment.png",
+    "amenities": [
+      "wifi",
+      "pool",
+      "spa",
+      "ocean view"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Yaba Budget Retreat",
+    "location": "Lagos",
+    "price": 3000,
+    "wifi_speed": 20.0,
+    "beach_distance": 12000,
+    "rating": 3.8,
+    "available": true,
+    "image_url": "/images/estate.png",
+    "amenities": [
+      "wifi"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Asokoro Diplomat Residence",
+    "location": "Abuja",
+    "price": 28000,
+    "wifi_speed": 100.0,
+    "beach_distance": 99999,
+    "rating": 4.8,
+    "available": true,
+    "image_url": "/images/penthouse.png",
+    "amenities": [
+      "wifi",
+      "security",
+      "garden"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Tarkwa Bay Surfer's Cabin",
+    "location": "Lagos",
+    "price": 6000,
+    "wifi_speed": 15.0,
+    "beach_distance": 10,
+    "rating": 4.2,
+    "available": true,
+    "image_url": "/images/villa.png",
+    "amenities": [
+      "beachfront",
+      "bbq"
+    ]
+  }
+]
