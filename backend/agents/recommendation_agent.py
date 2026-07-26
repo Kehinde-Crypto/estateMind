@@ -9,7 +9,7 @@ import json
 class RecommendationAgent:
 
     def _generate_template_explanation(self, score: float, property: dict, preference: UserPreference) -> str:
-        # Template-based explanation (Fallback for Grok API)
+        # Template-based explanation (fallback if Gemini API is unavailable)
         if score > 90:
             return "Excellent match! This property meets all your key criteria — budget, location, and connectivity."
         elif score >= 70:
@@ -24,49 +24,61 @@ class RecommendationAgent:
         else:
             return "Limited match. Consider adjusting your preferences for better options."
 
-    async def _generate_grok_explanation(self, property: dict, preference: UserPreference, score_breakdown: dict) -> str:
-        api_key = os.getenv("GROK_API_KEY")
-        if not api_key or api_key == "your_grok_api_key_here":
+    async def _generate_gemini_explanation(self, property: dict, preference: UserPreference, score_breakdown: dict) -> str:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
             return None
 
-        # Prepare context for the prompt
-        prompt = f"""
-        You are an autonomous AI accommodation agent named EstateMind.
-        A user is looking for a property with these preferences:
-        Budget: {preference.budget}, Location: {preference.location}, Min WiFi: {preference.min_wifi_speed}Mbps, Beach Distance: {preference.max_beach_distance}m.
+        prompt = (
+            f"You are an autonomous AI accommodation agent named EstateMind. "
+            f"A user is looking for a property with these preferences: "
+            f"Budget: {preference.budget} USDC/night, Location: {preference.location}, "
+            f"Min WiFi: {preference.min_wifi_speed}Mbps, Max Beach Distance: {preference.max_beach_distance}m. "
+            f"You are recommending this property: "
+            f"Name: {property['name']}, Location: {property['location']}, "
+            f"Price: {property['price']} USDC/night, WiFi: {property['wifi_speed']}Mbps, "
+            f"Rating: {property['rating']}/5. "
+            f"Score breakdown (out of 110 points): {json.dumps(score_breakdown)}. "
+            f"Write a concise 1-2 sentence explanation to the user on why this property was recommended. "
+            f"Focus on the key strengths or tradeoffs. Be direct and professional."
+        )
 
-        You are recommending this property:
-        Name: {property['name']}, Location: {property['location']}, Price: {property['price']}, WiFi: {property['wifi_speed']}Mbps, Rating: {property['rating']}.
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-3.5-flash:generateContent?key={api_key}"
+        )
 
-        Here is the score breakdown showing why it matched (out of 110 total points): {json.dumps(score_breakdown)}
-
-        Write a concise, 1-2 sentence explanation addressed to the user on why this property was recommended. Focus on the tradeoffs or strong points based on their preferences. Be direct and professional.
-        """
-        
         try:
-            # Note: Assuming standard xAI Grok API endpoint. Replace if different.
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    "https://api.x.ai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    },
+                    url,
+                    headers={"Content-Type": "application/json"},
                     json={
-                        "model": "grok-beta",
-                        "messages": [
-                            {"role": "system", "content": "You are a concise, helpful AI real estate booking assistant."},
-                            {"role": "user", "content": prompt}
-                        ],
-                        "max_tokens": 100
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {
+                            "maxOutputTokens": 300,
+                            "temperature": 0.4
+                        }
                     },
-                    timeout=10.0
+                    timeout=15.0
                 )
                 response.raise_for_status()
                 data = response.json()
-                return data["choices"][0]["message"]["content"].strip()
+                
+                # Safely extract the response text
+                candidates = data.get("candidates", [])
+                if not candidates:
+                    return None
+                    
+                content = candidates[0].get("content", {})
+                parts = content.get("parts", [])
+                
+                if not parts:
+                    return None
+                    
+                return parts[0].get("text", "").strip()
         except Exception as e:
-            print(f"Grok API failed, falling back to template: {e}")
+            print(f"Gemini API failed, falling back to template: {e}")
             return None
 
     async def recommend(self, preference: UserPreference) -> Dict:
@@ -114,8 +126,8 @@ class RecommendationAgent:
                 score += 10
                 breakdown["availability_bonus"] = 10
 
-            # Attempt Grok explanation, fallback to template
-            explanation = await self._generate_grok_explanation(property, preference, breakdown)
+            # Attempt Gemini explanation, fallback to template
+            explanation = await self._generate_gemini_explanation(property, preference, breakdown)
             if not explanation:
                 explanation = self._generate_template_explanation(score, property, preference)
 
