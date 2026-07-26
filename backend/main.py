@@ -11,6 +11,12 @@ from api.properties import router as properties_router
 from api.booking import router as booking_router
 from api.payment import router as payment_router
 
+from database import engine
+from models.orm import Base
+
+# Create all database tables
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="EstateMind API",
     description="Autonomous Wallet for Accommodations"

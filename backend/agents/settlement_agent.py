@@ -1,11 +1,12 @@
 # agents/settlement_agent.py
 from typing import Dict
+from sqlalchemy.orm import Session
 from services.wallet_service import deduct_funds, get_wallet
 from datetime import datetime, timezone
 
 class SettlementAgent:
     
-    def settle_booking(self, booking_id: str, property_name: str, total_price: float, treasury_decision: dict) -> Dict:
+    def settle_booking(self, db: Session, booking_id: str, property_name: str, total_price: float, treasury_decision: dict) -> Dict:
         """
         Executes mock USDC settlement after treasury approval.
         """
@@ -17,7 +18,7 @@ class SettlementAgent:
             }
             
         # 2. Verify Current Balance (Double Check)
-        wallet = get_wallet()
+        wallet = get_wallet(db)
         if wallet["balance"] < total_price:
             return {
                 "settled": False,
@@ -27,7 +28,7 @@ class SettlementAgent:
         try:
             # 3. Deduct funds and record transaction
             description = f"Booking settlement — {property_name}"
-            tx = deduct_funds(amount=total_price, booking_id=booking_id, description=description)
+            tx = deduct_funds(db=db, amount=total_price, booking_id=booking_id, description=description)
             
             return {
                 "settled": True,

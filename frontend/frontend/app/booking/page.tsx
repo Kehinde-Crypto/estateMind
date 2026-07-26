@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CalendarCheck, ShieldCheck, Wallet, ArrowRight } from 'lucide-react';
+import { CalendarCheck, ShieldCheck, Wallet, ArrowRight, CheckCircle2 } from 'lucide-react';
 import BookingStatus from '@/components/BookingStatus';
 
 export default function BookingPage() {

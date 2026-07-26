@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import PropertyCard, { Property } from '@/components/PropertyCard';
 import { Building2, Loader2, AlertCircle } from 'lucide-react';
 
@@ -35,14 +36,23 @@ export default function DiscoverPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* Header */}
-      <div className="flex items-center gap-4 border-b border-border pb-6">
-        <div className="w-12 h-12 rounded-xl bg-elevated border border-border flex items-center justify-center text-primary">
-          <Building2 size={24} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-elevated border border-border flex items-center justify-center text-primary">
+            <Building2 size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Discover Properties</h1>
+            <p className="text-secondary mt-1">Browse all available accommodations in the network.</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Discover Properties</h1>
-          <p className="text-secondary mt-1">Browse all available accommodations in the network.</p>
-        </div>
+        
+        <Link 
+          href="/recommend"
+          className="inline-flex items-center justify-center h-11 px-6 rounded-lg bg-accent text-accent-foreground font-medium transition-all hover:bg-accent/90 shadow-[0_0_20px_rgba(0,212,170,0.3)] hover:shadow-[0_0_30px_rgba(0,212,170,0.5)]"
+        >
+          Generate AI Recommendations
+        </Link>
       </div>
 
       {/* Content */}

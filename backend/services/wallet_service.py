@@ -1,35 +1,54 @@
 # services/wallet_service.py
 from datetime import datetime, timezone
 import uuid
-from models.wallet import Wallet, Transaction
+from sqlalchemy.orm import Session
+from models.orm import WalletORM, TransactionORM
 
-# In-memory singleton for MVP simulated wallet
-_mock_wallet = Wallet(
-    address="0xSIMULATED_WALLET_123456789",
-    balance=100000.0,  # 100k USDC starting balance
-    transactions=[]
-)
-
-def get_wallet() -> dict:
-    return _mock_wallet.dict()
-
-def initialize_wallet(initial_balance: float = 100000.0) -> dict:
-    global _mock_wallet
-    _mock_wallet.balance = initial_balance
-    _mock_wallet.transactions = []
-    return _mock_wallet.dict()
-
-def deduct_funds(amount: float, booking_id: str, description: str) -> dict:
-    global _mock_wallet
+def get_wallet(db: Session) -> dict:
+    wallet = db.query(WalletORM).first()
+    if not wallet:
+        return {"address": "0xSIMULATED_WALLET_123456789", "balance": 100000.0, "transactions": []}
     
-    if _mock_wallet.balance < amount:
+    transactions = db.query(TransactionORM).order_by(TransactionORM.timestamp.desc()).all()
+    
+    return {
+        "address": wallet.address,
+        "balance": wallet.balance,
+        "transactions": [
+            {
+                "id": tx.id,
+                "type": tx.type,
+                "amount": tx.amount,
+                "booking_id": tx.booking_id,
+                "description": tx.description,
+                "timestamp": tx.timestamp.isoformat(),
+                "status": tx.status
+            } for tx in transactions
+        ]
+    }
+
+def initialize_wallet(db: Session, initial_balance: float = 100000.0) -> dict:
+    wallet = db.query(WalletORM).first()
+    if not wallet:
+        wallet = WalletORM(address="0xSIMULATED_WALLET_123456789", balance=initial_balance)
+        db.add(wallet)
+        db.commit()
+    return get_wallet(db)
+
+def deduct_funds(db: Session, amount: float, booking_id: str, description: str) -> dict:
+    wallet = db.query(WalletORM).first()
+    if not wallet:
+        wallet = WalletORM(address="0xSIMULATED_WALLET_123456789", balance=100000.0)
+        db.add(wallet)
+        db.commit()
+        db.refresh(wallet)
+
+    if wallet.balance < amount:
         raise ValueError("Insufficient funds")
         
-    # Deduct balance
-    _mock_wallet.balance -= amount
+    wallet.balance -= amount
     
-    # Create transaction record
-    tx = Transaction(
+    tx = TransactionORM(
         id=f"tx_{uuid.uuid4().hex[:8]}",
         type="debit",
         amount=amount,
@@ -39,5 +58,16 @@ def deduct_funds(amount: float, booking_id: str, description: str) -> dict:
         status="completed"
     )
     
-    _mock_wallet.transactions.append(tx)
-    return tx.dict()
+    db.add(tx)
+    db.commit()
+    db.refresh(tx)
+    
+    return {
+        "id": tx.id,
+        "type": tx.type,
+        "amount": tx.amount,
+        "booking_id": tx.booking_id,
+        "description": tx.description,
+        "timestamp": tx.timestamp.isoformat(),
+        "status": tx.status
+    }

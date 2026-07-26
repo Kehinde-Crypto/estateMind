@@ -1,5 +1,6 @@
 # api/booking.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 import uuid
 
@@ -7,6 +8,7 @@ from models.booking import BookingRequest, Booking
 from services.property_service import get_property_by_id
 from services.wallet_service import get_wallet
 from services.booking_service import save_booking, get_all_bookings, get_booking_by_id
+from database import get_db
 
 from agents.treasury_agent import TreasuryAgent
 from agents.settlement_agent import SettlementAgent
@@ -20,7 +22,7 @@ treasury_agent = TreasuryAgent()
 settlement_agent = SettlementAgent()
 
 @router.post("/booking")
-def create_booking(request: BookingRequest):
+def create_booking(request: BookingRequest, db: Session = Depends(get_db)):
     # 1. Validate property
     prop = get_property_by_id(request.property_id)
     if not prop:
@@ -34,7 +36,7 @@ def create_booking(request: BookingRequest):
         raise HTTPException(status_code=400, detail="Invalid dates")
         
     total_price = prop["price"] * duration
-    wallet = get_wallet()
+    wallet = get_wallet(db)
     
     # 2. Treasury Agent Approval
     treasury_decision = treasury_agent.approve_booking(
@@ -57,28 +59,29 @@ def create_booking(request: BookingRequest):
         
     # Create pending booking record
     booking_id = f"bk_{uuid.uuid4().hex[:8]}"
-    booking = Booking(
-        id=booking_id,
-        property_id=prop["id"],
-        property_name=prop["name"],
-        check_in=request.check_in,
-        check_out=request.check_out,
-        total_price=total_price,
-        status="pending",
-        created_at=datetime.now(timezone.utc)
-    )
-    save_booking(booking)
+    booking_data = {
+        "id": booking_id,
+        "property_id": prop["id"],
+        "property_name": prop["name"],
+        "check_in": request.check_in.isoformat(),
+        "check_out": request.check_out.isoformat(),
+        "total_price": total_price,
+        "status": "pending"
+    }
+    save_booking(db, booking_data)
     
     # 3. Settlement Agent
     settlement = settlement_agent.settle_booking(
-        booking_id=booking.id,
+        db=db,
+        booking_id=booking_id,
         property_name=prop["name"],
         total_price=total_price,
         treasury_decision=treasury_decision
     )
     
     if not settlement["settled"]:
-        booking.status = "failed"
+        from services.booking_service import update_booking_status
+        update_booking_status(db, booking_id, "failed")
         return {
             "success": False,
             "data": None,
@@ -89,12 +92,13 @@ def create_booking(request: BookingRequest):
         }
         
     # Success
-    booking.status = "settled"
+    from services.booking_service import update_booking_status
+    booking = update_booking_status(db, booking_id, "settled")
     
     return {
         "success": True,
         "data": {
-            "booking": booking.dict(),
+            "booking": booking,
             "treasury_decision": treasury_decision,
             "settlement": settlement
         },
@@ -102,8 +106,8 @@ def create_booking(request: BookingRequest):
     }
 
 @router.get("/bookings")
-def list_bookings():
-    bookings = get_all_bookings()
+def list_bookings(db: Session = Depends(get_db)):
+    bookings = get_all_bookings(db)
     return {
         "success": True,
         "data": {
@@ -114,8 +118,8 @@ def list_bookings():
     }
 
 @router.get("/booking/{booking_id}")
-def get_booking(booking_id: str):
-    booking = get_booking_by_id(booking_id)
+def get_booking(booking_id: str, db: Session = Depends(get_db)):
+    booking = get_booking_by_id(db, booking_id)
     if not booking:
         raise HTTPException(status_code=404, detail="BOOKING_NOT_FOUND")
     return {
