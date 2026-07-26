@@ -30,12 +30,24 @@ class SettlementAgent:
             description = f"Booking settlement — {property_name}"
             tx = deduct_funds(db=db, amount=total_price, booking_id=booking_id, description=description)
             
+            # 4. If Circle API is active, attempt Circle on-chain settlement
+            from services.circle_service import CircleService
+            circle = CircleService()
+            circle_tx = None
+            if circle.is_configured():
+                try:
+                    owner_address = "0x0000000000000000000000000000000000000001"
+                    circle_tx = circle.transfer_usdc(destination_address=owner_address, amount=total_price, booking_id=booking_id)
+                except Exception as ce:
+                    print(f"Circle settlement notification: {ce}")
+
             return {
                 "settled": True,
                 "transaction": {
                     **tx,
                     "from_address": wallet["address"],
                     "to_address": "0xPROPERTY_OWNER_SIMULATED",
+                    "circle_tx": circle_tx
                 },
                 "wallet_balance_after": wallet["balance"] - total_price
             }

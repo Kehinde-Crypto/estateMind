@@ -54,7 +54,12 @@ export default function WalletPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Wallet Dashboard</h1>
-            <p className="text-secondary mt-1">Simulated Circle USDC Wallet</p>
+            <p className="text-secondary mt-1 flex items-center gap-2">
+              Circle Web3 Programmable Wallet 
+              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20">
+                Polygon Amoy Testnet
+              </span>
+            </p>
           </div>
         </div>
         
@@ -87,10 +92,18 @@ export default function WalletPage() {
                 <span className="text-accent font-semibold text-xl">USDC</span>
               </div>
               
-              <div className="mt-8 pt-6 border-t border-border/50 relative z-10">
+              <div className="mt-8 pt-6 border-t border-border/50 relative z-10 space-y-2">
                 <p className="text-xs text-muted font-mono break-all bg-base/50 p-2 rounded border border-border/50">
                   {walletData.wallet.address}
                 </p>
+                <a 
+                  href={`https://amoy.polygonscan.com/address/${walletData.wallet.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-xs text-accent hover:underline font-medium"
+                >
+                  View on Polygonscan Explorer ↗
+                </a>
               </div>
             </div>
           </div>
